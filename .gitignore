@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+*.tsbuildinfo
+
+# personal board data (markdown artifacts) and integration secrets
+brain/
+server/secrets.local.json
+
+# superpowers specs
+docs/superpowers/specs/
