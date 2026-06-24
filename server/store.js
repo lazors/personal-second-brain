@@ -12,8 +12,6 @@ const TYPE_FOLDER = {
   thought: 'thoughts',
   idea: 'ideas',
   task: 'tasks',
-  reference: 'references',
-  tracker: 'trackers',
 };
 
 export class MarkdownStore {

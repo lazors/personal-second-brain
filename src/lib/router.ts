@@ -1,27 +1,21 @@
 import { useEffect, useState } from 'react';
 
 export type Route =
-  | { name: 'dashboard' }
+  | { name: 'overview' }
   | { name: 'collection'; type: string }
   | { name: 'search' };
 
-const COLLECTIONS = new Set([
-  'thoughts',
-  'ideas',
-  'tasks',
-  'references',
-  'trackers',
-]);
+const COLLECTIONS = new Set(['thoughts', 'ideas', 'tasks']);
 
 function parse(hash: string): Route {
   const path = hash.replace(/^#\/?/, '').trim();
-  if (!path) return { name: 'dashboard' };
+  if (!path) return { name: 'overview' };
   if (path === 'search') return { name: 'search' };
   if (COLLECTIONS.has(path)) {
     // strip trailing 's' to get singular item type
     return { name: 'collection', type: path.replace(/s$/, '') };
   }
-  return { name: 'dashboard' };
+  return { name: 'overview' };
 }
 
 export function useRoute(): Route {

@@ -45,16 +45,6 @@ export function itemToMarkdown(item) {
     const due = toDateOnly(item.due);
     if (due) fm.due = due;
   }
-  if (item.type === 'reference' && item.url) fm.url = item.url;
-  if (item.type === 'tracker') {
-    if (item.unit) fm.unit = item.unit;
-    fm.entries = (item.entries ?? []).map((e) => ({
-      id: e.id,
-      value: e.value,
-      ...(e.note ? { note: e.note } : {}),
-      at: toIso(e.at) ?? e.at,
-    }));
-  }
 
   fm.created = toIso(item.createdAt);
   fm.updated = toIso(item.updatedAt);
@@ -98,16 +88,6 @@ export function markdownToItem(text) {
   if (fm.status) item.status = fm.status;
   if (fm.priority) item.priority = fm.priority;
   if (fm.due !== undefined) item.due = fromIso(String(fm.due));
-  if (fm.url !== undefined) item.url = fm.url;
-  if (fm.unit !== undefined) item.unit = fm.unit;
-  if (Array.isArray(fm.entries)) {
-    item.entries = fm.entries.map((e) => ({
-      id: e.id,
-      value: e.value,
-      note: e.note,
-      at: fromIso(e.at) ?? (typeof e.at === 'number' ? e.at : 0),
-    }));
-  }
   return item;
 }
 

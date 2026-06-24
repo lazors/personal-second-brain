@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import type { Item, ItemType, TrackerEntry } from '../types';
+import type { Item, ItemType } from '../types';
 import { defaultsForType } from '../types';
 import { uid } from '../lib/util';
 import * as api from './api';
@@ -19,8 +19,6 @@ export interface NewItemInput {
   status?: Item['status'];
   priority?: Item['priority'];
   due?: number;
-  url?: string;
-  unit?: string;
 }
 
 export type ConnState = 'loading' | 'ready' | 'error';
@@ -33,7 +31,6 @@ interface StoreValue {
   addItem: (input: NewItemInput) => Item;
   updateItem: (id: string, patch: Partial<Item>) => void;
   deleteItem: (id: string) => void;
-  addTrackerEntry: (id: string, value: number, note?: string) => void;
   importItems: (incoming: Item[], mode: 'merge' | 'replace') => Promise<void>;
   exportJSON: () => string;
 }
@@ -85,8 +82,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...(input.status !== undefined ? { status: input.status } : {}),
         ...(input.priority !== undefined ? { priority: input.priority } : {}),
         ...(input.due !== undefined ? { due: input.due } : {}),
-        ...(input.url !== undefined ? { url: input.url } : {}),
-        ...(input.unit !== undefined ? { unit: input.unit } : {}),
       };
       setItems((prev) => [item, ...prev]);
       api.createItem(item).then(
@@ -127,32 +122,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [flagError],
   );
 
-  const addTrackerEntry = useCallback(
-    (id: string, value: number, note?: string) => {
-      const entry: TrackerEntry = {
-        id: uid(),
-        value,
-        note: note?.trim() || undefined,
-        at: Date.now(),
-      };
-      setItems((prev) => {
-        const next = prev.map((it) =>
-          it.id === id
-            ? {
-                ...it,
-                entries: [...(it.entries ?? []), entry],
-                updatedAt: Date.now(),
-              }
-            : it,
-        );
-        const changed = next.find((it) => it.id === id);
-        if (changed) persist(changed);
-        return next;
-      });
-    },
-    [persist],
-  );
-
   const importItems = useCallback(
     async (incoming: Item[], mode: 'merge' | 'replace') => {
       const result = await api.bulkImport(incoming, mode);
@@ -172,7 +141,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addItem,
     updateItem,
     deleteItem,
-    addTrackerEntry,
     importItems,
     exportJSON,
   };

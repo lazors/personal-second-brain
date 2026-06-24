@@ -14,7 +14,7 @@ export function App() {
   const { conn, connError, reload } = useStore();
 
   const renderMain = () => {
-    if (route.name === 'dashboard') return <Dashboard />;
+    if (route.name === 'overview') return <Dashboard />;
     if (route.name === 'search') return <SearchView />;
     if (
       route.name === 'collection' &&

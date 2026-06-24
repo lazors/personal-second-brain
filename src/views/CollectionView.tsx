@@ -14,6 +14,12 @@ interface CollectionViewProps {
 const TASK_ORDER: Record<TaskStatus, number> = { todo: 0, doing: 1, done: 2 };
 const PRIORITY_ORDER: Record<string, number> = { high: 0, med: 1, low: 2 };
 
+const TASK_COLUMNS: { status: TaskStatus; label: string }[] = [
+  { status: 'todo', label: 'To do' },
+  { status: 'doing', label: 'Doing' },
+  { status: 'done', label: 'Done' },
+];
+
 export function CollectionView({ type }: CollectionViewProps) {
   const { items, addItem, updateItem } = useStore();
   const meta = TYPE_META[type];
@@ -22,6 +28,8 @@ export function CollectionView({ type }: CollectionViewProps) {
   const [creating, setCreating] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<TaskStatus | null>(null);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -67,6 +75,17 @@ export function CollectionView({ type }: CollectionViewProps) {
       addItem(values);
       setCreating(false);
     }
+  };
+
+  const dropTo = (status: TaskStatus) => {
+    if (dragId) {
+      const dragged = items.find((i) => i.id === dragId);
+      if (dragged && dragged.status !== status) {
+        updateItem(dragId, { status });
+      }
+    }
+    setDragId(null);
+    setDragOver(null);
   };
 
   return (
@@ -116,7 +135,67 @@ export function CollectionView({ type }: CollectionViewProps) {
         </div>
       )}
 
-      {list.length === 0 ? (
+      {type === 'task' ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          {TASK_COLUMNS.map((col) => {
+            const cards = list.filter(
+              (i) => (i.status ?? 'todo') === col.status,
+            );
+            const isOver = dragOver === col.status;
+            return (
+              <div
+                key={col.status}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(col.status);
+                }}
+                onDragLeave={() => setDragOver((s) => (s === col.status ? null : s))}
+                onDrop={() => dropTo(col.status)}
+                className={`flex flex-col gap-3 rounded-xl border p-3 transition-colors ${
+                  isOver
+                    ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30'
+                    : 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30'
+                }`}
+              >
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    {col.label}
+                  </span>
+                  <span className="rounded-full bg-slate-200 px-1.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    {cards.length}
+                  </span>
+                </div>
+                {cards.length === 0 ? (
+                  <p className="px-1 py-6 text-center text-xs text-slate-400">
+                    Drop tasks here
+                  </p>
+                ) : (
+                  cards.map((item) => (
+                    <div
+                      key={item.id}
+                      draggable
+                      onDragStart={() => setDragId(item.id)}
+                      onDragEnd={() => {
+                        setDragId(null);
+                        setDragOver(null);
+                      }}
+                      className={`cursor-grab active:cursor-grabbing ${
+                        dragId === item.id ? 'opacity-50' : ''
+                      }`}
+                    >
+                      <ItemCard
+                        item={item}
+                        onEdit={setEditing}
+                        onTagClick={(t) => setActiveTag(t)}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : list.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 py-12 text-center">
           <span className="text-3xl">{meta.icon}</span>
           <p className="text-slate-500 dark:text-slate-400">

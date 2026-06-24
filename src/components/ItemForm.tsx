@@ -11,8 +11,6 @@ export interface ItemFormValues {
   status?: TaskStatus;
   priority?: Priority;
   due?: number;
-  url?: string;
-  unit?: string;
 }
 
 interface ItemFormProps {
@@ -39,8 +37,6 @@ export function ItemForm({
     initial?.priority ?? 'med',
   );
   const [due, setDue] = useState(tsToDateInput(initial?.due));
-  const [url, setUrl] = useState(initial?.url ?? '');
-  const [unit, setUnit] = useState(initial?.unit ?? '');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +46,6 @@ export function ItemForm({
       body,
       tags: parseTags(tags),
       ...(type === 'task' ? { status, priority, due: dateInputToTs(due) } : {}),
-      ...(type === 'reference' ? { url: url.trim() } : {}),
-      ...(type === 'tracker' ? { unit: unit.trim() } : {}),
     });
   };
 
@@ -92,20 +86,6 @@ export function ItemForm({
           placeholder={`${TYPE_META[type].label} title…`}
         />
       </div>
-
-      {type === 'reference' && (
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-            URL
-          </label>
-          <input
-            className="input"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://…"
-          />
-        </div>
-      )}
 
       {type === 'task' && (
         <div className="grid grid-cols-3 gap-3">
@@ -151,23 +131,9 @@ export function ItemForm({
         </div>
       )}
 
-      {type === 'tracker' && (
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-            Unit (optional)
-          </label>
-          <input
-            className="input"
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            placeholder="hours, kg, count…"
-          />
-        </div>
-      )}
-
       <div>
         <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
-          {type === 'reference' ? 'Notes' : 'Body'}
+          Body
         </label>
         <textarea
           className="input min-h-[96px] resize-y"

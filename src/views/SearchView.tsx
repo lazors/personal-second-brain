@@ -21,8 +21,7 @@ export function SearchView() {
         (i) =>
           i.title.toLowerCase().includes(q) ||
           i.body.toLowerCase().includes(q) ||
-          i.tags.some((t) => t.includes(q)) ||
-          (i.url ?? '').toLowerCase().includes(q),
+          i.tags.some((t) => t.includes(q)),
       );
     }
     return [...r].sort((a, b) => b.updatedAt - a.updatedAt);

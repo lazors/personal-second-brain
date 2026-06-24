@@ -29,11 +29,11 @@ export function Sidebar() {
       </div>
 
       <button
-        className={linkClass(route.name === 'dashboard')}
+        className={linkClass(route.name === 'overview')}
         onClick={() => navigate('/')}
       >
         <span className="flex items-center gap-2">
-          <span>🏠</span> Dashboard
+          <span>🏠</span> Overview
         </span>
       </button>
 

@@ -151,11 +151,6 @@ export function Dashboard() {
     [items],
   );
 
-  const trackers = useMemo(
-    () => items.filter((i) => i.type === 'tracker').slice(0, 4),
-    [items],
-  );
-
   const topTags = useMemo(() => {
     const freq = new Map<string, number>();
     for (const i of items)
@@ -171,7 +166,7 @@ export function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-          Dashboard
+          Overview
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Your work, captured in one place.
@@ -323,28 +318,6 @@ export function Dashboard() {
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {recent.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditing} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Trackers */}
-      {trackers.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">
-              📈 Trackers
-            </h2>
-            <button
-              className="text-sm text-brand-600 hover:underline dark:text-brand-400"
-              onClick={() => navigate('/trackers')}
-            >
-              View all →
-            </button>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {trackers.map((item) => (
               <ItemCard key={item.id} item={item} onEdit={setEditing} />
             ))}
           </div>

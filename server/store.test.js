@@ -66,23 +66,6 @@ describe('MarkdownStore', () => {
   it('returns false when removing a missing item', async () => {
     expect(await store.remove('nope')).toBe(false);
   });
-
-  it('round-trips a tracker through disk', async () => {
-    await store.write({
-      id: 't',
-      type: 'tracker',
-      title: 'Focus hours',
-      body: '',
-      tags: ['health'],
-      unit: 'hours',
-      entries: [{ id: 'e1', value: 2, at: 5000 }],
-      createdAt: 1000,
-      updatedAt: 1000,
-    });
-    const [item] = await store.list();
-    expect(item.unit).toBe('hours');
-    expect(item.entries[0].value).toBe(2);
-  });
 });
 
 describe('slugify / fileName', () => {

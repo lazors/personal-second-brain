@@ -29,29 +29,14 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
-  const { updateItem, deleteItem, addTrackerEntry } = useStore();
+  const { updateItem, deleteItem } = useStore();
   const [confirming, setConfirming] = useState(false);
-  const [logValue, setLogValue] = useState('');
   const meta = TYPE_META[item.type];
 
   const cycleStatus = () => {
     const order: TaskStatus[] = ['todo', 'doing', 'done'];
     const next = order[(order.indexOf(item.status ?? 'todo') + 1) % order.length];
     updateItem(item.id, { status: next });
-  };
-
-  const latest =
-    item.type === 'tracker' && item.entries && item.entries.length
-      ? item.entries[item.entries.length - 1]
-      : undefined;
-
-  const submitLog = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = parseFloat(logValue);
-    if (!isNaN(num)) {
-      addTrackerEntry(item.id, num);
-      setLogValue('');
-    }
   };
 
   return (
@@ -72,6 +57,15 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
           </div>
         </div>
         <div className="flex shrink-0 gap-1">
+          {item.type === 'thought' && (
+            <button
+              className="btn-ghost h-7 px-2 text-xs"
+              onClick={() => updateItem(item.id, { type: 'idea' })}
+              title="Move this thought to Ideas"
+            >
+              💡 To idea
+            </button>
+          )}
           <button
             className="btn-ghost h-7 w-7 !px-0 text-xs"
             onClick={() => onEdit(item)}
@@ -149,48 +143,6 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
             </div>
           );
         })()}
-
-      {item.type === 'reference' && item.url && (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noreferrer"
-          className="truncate text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
-        >
-          {item.url} ↗
-        </a>
-      )}
-
-      {item.type === 'tracker' && (
-        <div className="space-y-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-slate-800 dark:text-slate-100">
-              {latest ? latest.value : '—'}
-            </span>
-            {item.unit && (
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {item.unit}
-              </span>
-            )}
-            <span className="text-xs text-slate-400">
-              {item.entries?.length ?? 0} entries
-            </span>
-          </div>
-          <form onSubmit={submitLog} className="flex gap-2">
-            <input
-              className="input h-8 py-1 text-sm"
-              type="number"
-              step="any"
-              value={logValue}
-              onChange={(e) => setLogValue(e.target.value)}
-              placeholder="Log a value…"
-            />
-            <button type="submit" className="btn-subtle h-8 shrink-0">
-              + Log
-            </button>
-          </form>
-        </div>
-      )}
 
       {/* Tags + footer */}
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">

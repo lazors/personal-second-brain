@@ -59,29 +59,6 @@ describe('round-trip', () => {
     expect(back.priority).toBe('high');
     expect(back.due).toBe(task.due);
   });
-
-  it('preserves a reference url', () => {
-    const ref = { ...base, type: 'reference', url: 'https://example.com/doc' };
-    const back = markdownToItem(itemToMarkdown(ref));
-    expect(back.url).toBe('https://example.com/doc');
-  });
-
-  it('preserves tracker entries', () => {
-    const tracker = {
-      ...base,
-      type: 'tracker',
-      unit: 'hours',
-      entries: [
-        { id: 'e1', value: 3, note: 'deep work', at: Date.parse('2026-06-22T08:00:00.000Z') },
-        { id: 'e2', value: 1.5, at: Date.parse('2026-06-22T12:00:00.000Z') },
-      ],
-    };
-    const back = markdownToItem(itemToMarkdown(tracker));
-    expect(back.unit).toBe('hours');
-    expect(back.entries).toHaveLength(2);
-    expect(back.entries[0]).toMatchObject({ value: 3, note: 'deep work' });
-    expect(back.entries[1].value).toBe(1.5);
-  });
 });
 
 describe('markdownToItem tolerance', () => {
