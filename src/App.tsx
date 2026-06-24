@@ -20,7 +20,9 @@ export function App() {
       route.name === 'collection' &&
       ITEM_TYPES.includes(route.type as ItemType)
     ) {
-      return <CollectionView type={route.type as ItemType} />;
+      return (
+        <CollectionView key={route.type} type={route.type as ItemType} />
+      );
     }
     return <Dashboard />;
   };

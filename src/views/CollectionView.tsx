@@ -79,6 +79,13 @@ export function CollectionView({ type }: CollectionViewProps) {
     }
   };
 
+  // Open a card's editor on click, unless the click landed on one of the
+  // card's own controls (edit, delete, convert, tags).
+  const openOnClick = (item: Item) => (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('button, a, input, label')) return;
+    setEditing(item);
+  };
+
   const dropTo = (status: TaskStatus) => {
     if (dragId) {
       const dragged = items.find((i) => i.id === dragId);
@@ -203,20 +210,12 @@ export function CollectionView({ type }: CollectionViewProps) {
                         }, 0);
                       }}
                       onClick={(e) => {
-                        // Ignore clicks that land on the card's own controls
-                        // (edit, delete, status, tags) or that follow a drag.
+                        // Suppress the click that immediately follows a drag.
                         if (draggedRef.current) {
                           draggedRef.current = false;
                           return;
                         }
-                        if (
-                          (e.target as HTMLElement).closest(
-                            'button, a, input, label',
-                          )
-                        ) {
-                          return;
-                        }
-                        setEditing(item);
+                        openOnClick(item)(e);
                       }}
                       className={`cursor-grab active:cursor-grabbing ${
                         dragId === item.id ? 'opacity-50' : ''
@@ -247,12 +246,17 @@ export function CollectionView({ type }: CollectionViewProps) {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((item) => (
-            <ItemCard
+            <div
               key={item.id}
-              item={item}
-              onEdit={setEditing}
-              onTagClick={(t) => setActiveTag(t)}
-            />
+              onClick={openOnClick(item)}
+              className="cursor-pointer"
+            >
+              <ItemCard
+                item={item}
+                onEdit={setEditing}
+                onTagClick={(t) => setActiveTag(t)}
+              />
+            </div>
           ))}
         </div>
       )}
