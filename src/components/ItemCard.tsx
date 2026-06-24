@@ -66,6 +66,22 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
               💡 To idea
             </button>
           )}
+          {item.type === 'idea' && (
+            <button
+              className="btn-ghost h-7 px-2 text-xs"
+              onClick={() =>
+                updateItem(item.id, {
+                  type: 'task',
+                  status: 'todo',
+                  priority: undefined,
+                  due: undefined,
+                })
+              }
+              title="Move this idea to Tasks"
+            >
+              ✅ To task
+            </button>
+          )}
           <button
             className="btn-ghost h-7 w-7 !px-0 text-xs"
             onClick={() => onEdit(item)}
