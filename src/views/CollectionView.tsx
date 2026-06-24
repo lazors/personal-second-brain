@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Item, ItemType, TaskStatus } from '../types';
 import { TYPE_META } from '../types';
 import { useStore } from '../store/StoreContext';
@@ -30,6 +30,8 @@ export function CollectionView({ type }: CollectionViewProps) {
   const [query, setQuery] = useState('');
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<TaskStatus | null>(null);
+  // True for the click that immediately follows a drag, so we can suppress it.
+  const draggedRef = useRef(false);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -174,10 +176,33 @@ export function CollectionView({ type }: CollectionViewProps) {
                     <div
                       key={item.id}
                       draggable
-                      onDragStart={() => setDragId(item.id)}
+                      onDragStart={() => {
+                        setDragId(item.id);
+                        draggedRef.current = true;
+                      }}
                       onDragEnd={() => {
                         setDragId(null);
                         setDragOver(null);
+                        // Clear after any trailing click has had a chance to fire.
+                        setTimeout(() => {
+                          draggedRef.current = false;
+                        }, 0);
+                      }}
+                      onClick={(e) => {
+                        // Ignore clicks that land on the card's own controls
+                        // (edit, delete, status, tags) or that follow a drag.
+                        if (draggedRef.current) {
+                          draggedRef.current = false;
+                          return;
+                        }
+                        if (
+                          (e.target as HTMLElement).closest(
+                            'button, a, input, label',
+                          )
+                        ) {
+                          return;
+                        }
+                        setEditing(item);
                       }}
                       className={`cursor-grab active:cursor-grabbing ${
                         dragId === item.id ? 'opacity-50' : ''
