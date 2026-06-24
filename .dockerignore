@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+brain
+docs
+scripts
+*.local
+.DS_Store
+Dockerfile
+docker-compose.yml
+.dockerignore
+README.md

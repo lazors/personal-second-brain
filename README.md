@@ -20,6 +20,9 @@ No account, no cloud. Data stays on your machine.
 - **JSON export/import** for backups, on top of the markdown files.
 - **Markdown files are the source of truth** — edit them by hand or from a
   script/agent and the app reflects the change on reload.
+- **Live updates** — the server watches the data dir and pushes a change event
+  (Server-Sent Events) when a `.md` file is added or edited, so a file dropped in
+  by a script or agent appears in the open browser without a manual refresh.
 
 ## How your data is stored
 
@@ -85,6 +88,20 @@ npm test           # run unit tests (Vitest)
 > Build on your personal PC; to use on another machine, copy the repo and run
 > `npm install && npm run build && npm start` there. The `brain/` folder holds
 > your notes (gitignored by default).
+
+### With Docker
+
+A multi-stage `Dockerfile` builds the UI and serves it from the zero-dependency
+Node server; `docker-compose.yml` bind-mounts your host `./brain` folder so your
+markdown stays on disk and is the source of truth.
+
+```bash
+docker compose up --build      # open http://localhost:3000
+```
+
+Files you (or an agent) drop into `./brain` show up live in the running app, and
+items created in the app are written back to the same folder. Override the host
+data location by changing the `./brain` bind-mount in `docker-compose.yml`.
 
 ## Tech
 

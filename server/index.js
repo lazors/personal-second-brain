@@ -9,7 +9,7 @@
 // install). The markdown files under ./brain are the source of truth.
 
 import http from 'node:http';
-import { promises as fs } from 'node:fs';
+import { promises as fs, watch as fsWatch } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MarkdownStore } from './store.js';
@@ -57,6 +57,10 @@ async function handleApi(req, res, url) {
   try {
     if (pathname === '/api/health') {
       return send(res, 200, { ok: true, dataDir: store.dir });
+    }
+
+    if (pathname === '/api/events' && method === 'GET') {
+      return handleEvents(req, res);
     }
 
     if (pathname === '/api/items' && method === 'GET') {
@@ -139,6 +143,48 @@ async function serveStatic(req, res, url) {
   }
 }
 
+// --- Live updates over Server-Sent Events ------------------------------------
+//
+// Clients subscribe to GET /api/events; when a .md file under the data dir
+// changes (e.g. one dropped in via the bind-mount), we push a `change` event
+// and the browser re-fetches. One-directional, dependency-free.
+
+const sseClients = new Set();
+
+function handleEvents(req, res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  res.write('retry: 2000\n\n');
+  sseClients.add(res);
+  req.on('close', () => sseClients.delete(res));
+}
+
+function broadcastChange() {
+  for (const res of sseClients) {
+    res.write('event: change\ndata: {}\n\n');
+  }
+}
+
+/** Watch the data dir and push a (debounced) change event on .md edits. */
+function startWatcher() {
+  let timer = null;
+  const fire = () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(broadcastChange, 150);
+  };
+  try {
+    fsWatch(store.dir, { recursive: true }, (_event, filename) => {
+      if (!filename || String(filename).endsWith('.md')) fire();
+    });
+  } catch (err) {
+    // Non-fatal: the app still works, just without live push.
+    console.warn(`   file watcher unavailable: ${err?.message || err}`);
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   // permissive CORS for local dev convenience
@@ -154,7 +200,10 @@ const server = http.createServer(async (req, res) => {
   return serveStatic(req, res, url);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🧠 Second Brain server on http://localhost:${PORT}`);
   console.log(`   data: ${store.dir}`);
+  // Ensure the data dir exists so the watcher can attach on a fresh volume.
+  await fs.mkdir(store.dir, { recursive: true }).catch(() => {});
+  startWatcher();
 });

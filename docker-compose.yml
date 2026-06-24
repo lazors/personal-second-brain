@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:8787"
+    environment:
+      BRAIN_DIR: /app/brain
+    volumes:
+      # Host markdown data is the source of truth. Files dropped in here appear
+      # live in the app; items created in the app are written back here.
+      - ./brain:/app/brain
+    restart: unless-stopped

@@ -61,6 +61,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     reload();
   }, [reload]);
 
+  // Live updates: re-fetch when the server signals a data-dir change (e.g. a
+  // markdown file added directly to the bind-mounted folder). EventSource
+  // reconnects on its own, so a dropped connection degrades gracefully.
+  useEffect(() => {
+    if (typeof EventSource === 'undefined') return;
+    const es = new EventSource('/api/events');
+    es.addEventListener('change', () => reload());
+    return () => es.close();
+  }, [reload]);
+
   /** Surface a background-write failure without losing the optimistic state. */
   const flagError = useCallback((err: unknown) => {
     setConnError(err instanceof Error ? err.message : String(err));
