@@ -97,9 +97,23 @@ export function CollectionView({ type }: CollectionViewProps) {
           <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
             <span>{meta.icon}</span> {meta.plural}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {list.length} {list.length === 1 ? 'item' : 'items'}
-            {activeTag && ` · filtered by #${activeTag}`}
+          <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <span>
+              {list.length} {list.length === 1 ? 'item' : 'items'}
+              {activeTag && ` · filtered by #${activeTag}`}
+              {query.trim() && ` · matching "${query.trim()}"`}
+            </span>
+            {(activeTag || query.trim()) && (
+              <button
+                className="text-brand-600 hover:underline dark:text-brand-400"
+                onClick={() => {
+                  setActiveTag(null);
+                  setQuery('');
+                }}
+              >
+                Clear filters
+              </button>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
