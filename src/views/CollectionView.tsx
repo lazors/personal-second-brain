@@ -107,7 +107,7 @@ export function CollectionView({ type }: CollectionViewProps) {
             className="input h-9 w-48"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Filter ${meta.plural.toLowerCase()}…`}
+            placeholder={`Search ${meta.plural.toLowerCase()}…`}
           />
           <button className="btn-primary h-9" onClick={() => setCreating(true)}>
             + New {meta.label}
