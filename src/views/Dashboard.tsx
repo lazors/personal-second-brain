@@ -2,81 +2,100 @@ import { useMemo, useState } from 'react';
 import type { Item } from '../types';
 import { ITEM_TYPES, TYPE_META } from '../types';
 import { useStore } from '../store/StoreContext';
-import { ItemCard } from '../components/ItemCard';
 import { Modal } from '../components/Modal';
 import { ItemForm } from '../components/ItemForm';
+import { Mark, TYPE_SHAPE } from '../components/Mark';
 import { navigate } from '../lib/router';
-import {
-  formatDate,
-  timeAgo,
-  dueDaysUntil,
-  isUrgent,
-  dueLabel,
-} from '../lib/util';
+import { timeAgo, dueDaysUntil, dueLabel } from '../lib/util';
 
 const PRIORITY_RANK: Record<string, number> = { high: 0, med: 1, low: 2 };
 
-/** Compact one-line task row used by the dashboard widgets. */
-function TaskLine({
+/** Coloured dot per priority — warm clay/amber, calm grey for low. */
+const PRIORITY_DOT: Record<string, string> = {
+  high: 'bg-[#b5613f] dark:bg-[#e0936a]',
+  med: 'bg-[#b08a45] dark:bg-[#d8b46a]',
+  low: 'bg-[#a8a399] dark:bg-[#7c8278]',
+};
+
+/** Accent per recent item type. */
+const KIND_ACCENT: Record<string, { text: string; border: string }> = {
+  thought: {
+    text: 'text-[#33514d] dark:text-[#6fc28d]',
+    border: 'border-[#33514d] dark:border-[#6fc28d]',
+  },
+  idea: {
+    text: 'text-[#b08a45] dark:text-[#d8b46a]',
+    border: 'border-[#b08a45] dark:border-[#d8b46a]',
+  },
+};
+
+const weekday = (ts: number) =>
+  new Date(ts).toLocaleDateString(undefined, { weekday: 'short' });
+
+/** A single task row used inside the focus + backlog panels. */
+function TaskRow({
   t,
   onToggle,
+  highlight = false,
+  compact = false,
 }: {
   t: Item;
   onToggle: (id: string, next: 'todo' | 'done') => void;
+  highlight?: boolean;
+  compact?: boolean;
 }) {
   const open = t.status !== 'done';
   const days = open ? dueDaysUntil(t.due) : null;
-  const urgent = isUrgent(days);
+  const overdue = days !== null && days <= 0;
+  const dueStr =
+    days !== null ? (overdue ? dueLabel(days) : weekday(t.due!)) : null;
+
   return (
-    <div className="card flex items-center justify-between gap-3 py-2.5">
-      <label className="flex min-w-0 cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
-          checked={t.status === 'done'}
-          onChange={() => onToggle(t.id, t.status === 'done' ? 'todo' : 'done')}
-          className="h-4 w-4 shrink-0 accent-brand-600"
-        />
-        <span className="truncate font-medium text-slate-700 dark:text-slate-200">
-          {t.title}
+    <label
+      className={`flex cursor-pointer items-center gap-3 rounded-lg px-2.5 ${
+        compact ? 'py-[7px]' : 'py-2'
+      } ${
+        highlight
+          ? 'bg-[#f9efe9] dark:bg-[#26201a]'
+          : 'hover:bg-[#faf8f4] dark:hover:bg-[#222820]'
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={t.status === 'done'}
+        onChange={() => onToggle(t.id, t.status === 'done' ? 'todo' : 'done')}
+        className="h-[15px] w-[15px] shrink-0 rounded-[4px] accent-brand-500 dark:accent-[#6fc28d]"
+      />
+      <span className="min-w-0 flex-1 truncate text-[13.5px] text-[#33312c] dark:text-[#dfe1da]">
+        {t.title}
+      </span>
+      {t.priority && (
+        <span className="flex shrink-0 items-center gap-1.5 text-[12px] text-[#9a948a] dark:text-[#8b9183]">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${PRIORITY_DOT[t.priority]}`}
+          />
+          {t.priority}
         </span>
-      </label>
-      <div className="flex shrink-0 items-center gap-2 text-xs">
-        {urgent && (
-          <span
-            className="rounded-full bg-rose-100 px-1.5 py-0.5 font-semibold text-rose-700 dark:bg-rose-900/50 dark:text-rose-300"
-            title="Urgent — due soon or overdue"
-          >
-            🔥
-          </span>
-        )}
-        {t.priority && (
-          <span
-            className={
-              t.priority === 'high'
-                ? 'text-rose-500'
-                : t.priority === 'med'
-                  ? 'text-amber-500'
-                  : 'text-slate-400'
-            }
-          >
-            ● {t.priority}
-          </span>
-        )}
-        {t.due && (
-          <span
-            className={
-              days !== null && days < 0
-                ? 'font-semibold text-rose-500'
-                : 'text-slate-400'
-            }
-          >
-            {days !== null ? dueLabel(days) : formatDate(t.due)}
-          </span>
-        )}
-      </div>
-    </div>
+      )}
+      {dueStr && (
+        <span
+          className={`w-[58px] shrink-0 text-right text-[12px] ${
+            overdue
+              ? 'font-semibold text-[#b5613f] dark:text-[#e0936a]'
+              : 'text-[#9a948a] dark:text-[#8b9183]'
+          }`}
+        >
+          {dueStr}
+        </span>
+      )}
+    </label>
   );
 }
+
+const panel =
+  'rounded-[13px] border border-[#e7e4de] bg-white dark:border-[#2a302a] dark:bg-[#1b201a]';
+const heading =
+  'font-serif text-[16px] font-medium text-[#2c2a26] dark:text-[#ebece6]';
 
 export function Dashboard() {
   const { items, updateItem } = useStore();
@@ -100,8 +119,8 @@ export function Dashboard() {
   const byDueAsc = (a: Item, b: Item) =>
     (dueDaysUntil(a.due) ?? Infinity) - (dueDaysUntil(b.due) ?? Infinity);
 
-  // Overdue + due today.
-  const today = useMemo(
+  // Overdue + due today (needs attention).
+  const attention = useMemo(
     () =>
       openTasks
         .filter((t) => {
@@ -112,7 +131,7 @@ export function Dashboard() {
     [openTasks],
   );
 
-  // Due in the next 7 days (after today).
+  // Due in the next 7 days.
   const thisWeek = useMemo(
     () =>
       openTasks
@@ -124,7 +143,7 @@ export function Dashboard() {
     [openTasks],
   );
 
-  // Everything else open: no due date, or further out.
+  // No due date or further out.
   const backlog = useMemo(
     () =>
       openTasks
@@ -138,7 +157,7 @@ export function Dashboard() {
             (PRIORITY_RANK[b.priority ?? 'med'] ?? 1);
           return p !== 0 ? p : byDueAsc(a, b);
         })
-        .slice(0, 6),
+        .slice(0, 8),
     [openTasks],
   );
 
@@ -157,179 +176,195 @@ export function Dashboard() {
       for (const t of i.tags) freq.set(t, (freq.get(t) ?? 0) + 1);
     return Array.from(freq.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 12);
+      .slice(0, 10);
   }, [items]);
 
   const empty = items.length === 0;
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+  const lastActivity = items.length
+    ? timeAgo(Math.max(...items.map((i) => i.updatedAt)))
+    : '';
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-          Overview
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Your work, captured in one place.
-        </p>
-      </div>
+    <div>
+      <h1 className="mb-[18px] font-serif text-[26px] font-medium text-[#2c2a26] dark:text-[#ebece6]">
+        Overview{' '}
+        <span className="font-sans text-[13px] font-normal text-[#9a948a] dark:text-[#7c8278]">
+          · {today}
+        </span>
+      </h1>
 
-      {/* Count tiles */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {ITEM_TYPES.map((type) => {
-          const meta = TYPE_META[type];
-          return (
-            <button
-              key={type}
-              onClick={() => navigate(`/${meta.plural.toLowerCase()}`)}
-              className="card flex items-center gap-3 text-left transition-transform hover:-translate-y-0.5"
-            >
-              <span className="text-2xl">{meta.icon}</span>
-              <span>
-                <span className="block text-2xl font-bold text-slate-800 dark:text-slate-100">
-                  {counts[type]}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {meta.plural}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {empty && (
-        <div className="card py-12 text-center text-slate-500 dark:text-slate-400">
-          Nothing captured yet — use the bar at the top to add your first
-          thought, idea, or task.
+      {empty ? (
+        <div className={`${panel} px-6 py-12 text-center text-[#9a948a] dark:text-[#8b9183]`}>
+          Nothing captured yet — use the bar above to add your first thought,
+          idea, or task.
         </div>
-      )}
-
-      {/* Today + This week */}
-      {!empty && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-700 dark:text-slate-200">
-                🔥 Today
-                {today.length > 0 && (
-                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-900/50 dark:text-rose-300">
-                    {today.length}
-                  </span>
-                )}
-              </h2>
-              <button
-                className="text-sm text-brand-600 hover:underline dark:text-brand-400"
-                onClick={() => navigate('/tasks')}
-              >
-                All tasks →
-              </button>
+      ) : (
+        <div className="grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[1.7fr_1fr]">
+          {/* Focus: This week */}
+          <section className={`${panel} px-[18px] pb-2.5 pt-4`}>
+            <div className="mb-2 flex items-baseline justify-between">
+              <h2 className={heading}>This week</h2>
+              <span className="text-[12px] text-[#a39d92] dark:text-[#7c8278]">
+                {openTasks.length} open
+                {attention.length > 0 && ` · ${attention.length} need attention`}
+              </span>
             </div>
-            {today.length === 0 ? (
-              <p className="text-sm text-slate-400">
-                Nothing due today or overdue. 🎉
+            {attention.length === 0 && thisWeek.length === 0 ? (
+              <p className="px-2.5 py-3 text-[13px] text-[#a39d92] dark:text-[#7c8278]">
+                Nothing due in the next 7 days.
               </p>
             ) : (
-              <div className="space-y-2">
-                {today.map((t) => (
-                  <TaskLine key={t.id} t={t} onToggle={toggleTask} />
+              <>
+                {attention.map((t) => (
+                  <TaskRow key={t.id} t={t} onToggle={toggleTask} highlight />
                 ))}
-              </div>
-            )}
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-700 dark:text-slate-200">
-              📅 This week
-              {thisWeek.length > 0 && (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  {thisWeek.length}
-                </span>
-              )}
-            </h2>
-            {thisWeek.length === 0 ? (
-              <p className="text-sm text-slate-400">Nothing due in the next 7 days.</p>
-            ) : (
-              <div className="space-y-2">
                 {thisWeek.map((t) => (
-                  <TaskLine key={t.id} t={t} onToggle={toggleTask} />
+                  <TaskRow key={t.id} t={t} onToggle={toggleTask} />
+                ))}
+              </>
+            )}
+          </section>
+
+          {/* At a glance — spans two rows on the right */}
+          <section
+            className={`${panel} flex flex-col px-[18px] py-4 lg:row-span-2`}
+          >
+            <h2 className={`${heading} mb-3`}>At a glance</h2>
+            <div className="flex flex-col">
+              {ITEM_TYPES.map((type, idx) => {
+                const meta = TYPE_META[type];
+                const accent =
+                  type === 'idea'
+                    ? 'text-[#b08a45] dark:text-[#d8b46a]'
+                    : 'text-[#33514d] dark:text-[#6fc28d]';
+                return (
+                  <button
+                    key={type}
+                    onClick={() => navigate(`/${meta.plural.toLowerCase()}`)}
+                    className={`flex items-center justify-between py-2.5 text-left ${
+                      idx < ITEM_TYPES.length - 1
+                        ? 'border-b border-[#f0ede6] dark:border-[#262b22]'
+                        : ''
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5 text-[13.5px] text-[#5c574e] dark:text-[#b6bbb0]">
+                      <span className={accent}>
+                        <Mark shape={TYPE_SHAPE[type]} size={12} />
+                      </span>
+                      {meta.plural}
+                    </span>
+                    <span className="font-serif text-[19px] text-[#2c2a26] dark:text-[#ebece6]">
+                      {counts[type]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-[15px] border-t border-[#f0ede6] pt-[15px] dark:border-[#262b22]">
+              <div className="mb-2.5 font-serif text-[12.5px] italic text-[#a39d92] dark:text-[#6b7163]">
+                Top tags
+              </div>
+              {topTags.length === 0 ? (
+                <p className="text-[12.5px] text-[#a39d92] dark:text-[#7c8278]">
+                  No tags yet.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {topTags.map(([tag, n]) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1.5 rounded-[7px] border border-[#ebe8e1] bg-[#f4f2ec] px-2.5 py-1 text-[12px] text-[#5c574e] dark:border-[#2c322a] dark:bg-[#1f241c] dark:text-[#b6bbb0]"
+                    >
+                      {tag}
+                      <span className="text-[10.5px] text-[#b3aea4] dark:text-[#6b7163]">
+                        {n}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-auto pt-[15px] text-[11.5px] text-[#b3aea4] dark:text-[#5f655c]">
+              {lastActivity && `Last activity ${lastActivity}`}
+            </div>
+          </section>
+
+          {/* Backlog */}
+          <section className={`${panel} px-[18px] pb-2.5 pt-4`}>
+            <div className="mb-1.5 flex items-baseline justify-between">
+              <h2 className={heading}>Backlog</h2>
+              <button
+                className="text-[12.5px] text-[#33514d] hover:underline dark:text-[#6fc28d]"
+                onClick={() => navigate('/tasks')}
+              >
+                View all →
+              </button>
+            </div>
+            {backlog.length === 0 ? (
+              <p className="px-2.5 py-3 text-[13px] text-[#a39d92] dark:text-[#7c8278]">
+                {openTasks.length === 0
+                  ? 'No open tasks.'
+                  : 'Everything open has a due date — see This week above.'}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
+                {backlog.map((t) => (
+                  <div
+                    key={t.id}
+                    className="border-b border-[#f3f1ec] dark:border-[#232820]"
+                  >
+                    <TaskRow t={t} onToggle={toggleTask} compact />
+                  </div>
                 ))}
               </div>
             )}
           </section>
+
+          {/* Recent thoughts & ideas — full width */}
+          {recent.length > 0 && (
+            <section className={`${panel} px-[18px] py-4 lg:col-span-2`}>
+              <h2 className={`${heading} mb-3`}>Recent thoughts &amp; ideas</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {recent.map((item) => {
+                  const accent = KIND_ACCENT[item.type] ?? KIND_ACCENT.thought;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setEditing(item)}
+                      className={`border-l-2 pl-3 text-left ${accent.border}`}
+                    >
+                      <span
+                        className={`text-[10.5px] font-semibold uppercase tracking-[0.04em] ${accent.text}`}
+                      >
+                        {TYPE_META[item.type].label}
+                      </span>
+                      <div className="my-[3px] line-clamp-2 text-[13px] font-medium leading-snug text-[#33312c] dark:text-[#dfe1da]">
+                        {item.title}
+                      </div>
+                      {item.body && (
+                        <div className="line-clamp-2 text-[12px] leading-relaxed text-[#9a948a] dark:text-[#8b9183]">
+                          {item.body}
+                        </div>
+                      )}
+                      {item.tags.length > 0 && (
+                        <div className="mt-1.5 truncate text-[11px] text-[#b08a45] dark:text-[#cd9f5f]">
+                          {item.tags.join(' · ')}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
         </div>
-      )}
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Backlog: open tasks with no due date or further out */}
-        <section className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">
-              📋 Backlog
-              <span className="ml-2 text-sm font-normal text-slate-400">
-                no due date / later
-              </span>
-            </h2>
-            <button
-              className="text-sm text-brand-600 hover:underline dark:text-brand-400"
-              onClick={() => navigate('/tasks')}
-            >
-              View all →
-            </button>
-          </div>
-          {backlog.length === 0 ? (
-            <p className="text-sm text-slate-400">
-              {openTasks.length === 0
-                ? 'No open tasks. 🎉'
-                : 'Everything open has a due date — see Today and This week above.'}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {backlog.map((t) => (
-                <TaskLine key={t.id} t={t} onToggle={toggleTask} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Top tags */}
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">
-            🏷 Top tags
-          </h2>
-          {topTags.length === 0 ? (
-            <p className="text-sm text-slate-400">No tags yet.</p>
-          ) : (
-            <div className="card flex flex-wrap gap-1.5">
-              {topTags.map(([tag, n]) => (
-                <span key={tag} className="chip">
-                  #{tag} <span className="ml-1 text-slate-400">{n}</span>
-                </span>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* Recent thoughts/ideas */}
-      {recent.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">
-            💭 Recent thoughts & ideas
-          </h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {recent.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditing} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!empty && (
-        <p className="text-center text-xs text-slate-400">
-          Last activity {items.length ? timeAgo(
-            Math.max(...items.map((i) => i.updatedAt)),
-          ) : ''}
-        </p>
       )}
 
       <Modal

@@ -4,18 +4,30 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          'Hanken Grotesk',
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'Segoe UI',
+          'sans-serif',
+        ],
+        serif: ['Newsreader', 'Georgia', 'Cambria', 'serif'],
+      },
       colors: {
+        // Quiet sage-green accent (replaces the generic indigo).
         brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+          50: '#edf6f0',
+          100: '#d3ead9',
+          200: '#a9d6b8',
+          300: '#7cc096',
+          400: '#54a978',
+          500: '#3a8c5d',
+          600: '#2c6f49',
+          700: '#27583c',
+          800: '#234633',
+          900: '#1d3a2b',
         },
       },
     },

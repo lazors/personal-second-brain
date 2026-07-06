@@ -30,7 +30,8 @@ function initialTheme(): Theme {
   } catch {
     /* ignore */
   }
-  return 'light';
+  // Default to the dark-green theme.
+  return 'dark';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -39,8 +40,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('dark', theme === 'dark');
-    root.classList.toggle('bg-slate-50', theme === 'light');
-    root.classList.toggle('bg-slate-950', theme === 'dark');
+    // Warm paper in light mode; deep green-charcoal in dark mode.
+    root.classList.toggle('bg-[#f5f3ef]', theme === 'light');
+    root.classList.toggle('bg-[#12150f]', theme === 'dark');
     try {
       localStorage.setItem(KEY, theme);
     } catch {
