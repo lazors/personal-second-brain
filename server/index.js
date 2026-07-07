@@ -1,7 +1,7 @@
 // Local API server for Second Brain.
 //
 // - In production (`npm start`) it serves the built `dist/` AND the API from
-//   one process on localhost, so you just open http://localhost:8787.
+//   one process on localhost, so you just open http://localhost:6767.
 // - In development the Vite dev server proxies `/api` here (see vite.config.ts),
 //   so the UI hot-reloads while this process owns the data + integrations.
 //
@@ -14,7 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MarkdownStore } from './store.js';
 
-const PORT = Number(process.env.PORT) || 8787;
+const PORT = Number(process.env.PORT) || 6767;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');

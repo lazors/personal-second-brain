@@ -22,11 +22,23 @@ export const ITEM_TYPES: ItemType[] = ['thought', 'idea', 'task'];
 
 export const TYPE_META: Record<
   ItemType,
-  { label: string; plural: string; icon: string; accent: string }
+  { label: string; plural: string; accent: string }
 > = {
-  thought: { label: 'Thought', plural: 'Thoughts', icon: '💭', accent: 'sky' },
-  idea: { label: 'Idea', plural: 'Ideas', icon: '💡', accent: 'amber' },
-  task: { label: 'Task', plural: 'Tasks', icon: '✅', accent: 'emerald' },
+  thought: {
+    label: 'Thought',
+    plural: 'Thoughts',
+    accent: 'text-[#33514d] dark:text-[#6fc28d]',
+  },
+  idea: {
+    label: 'Idea',
+    plural: 'Ideas',
+    accent: 'text-[#b08a45] dark:text-[#d8b46a]',
+  },
+  task: {
+    label: 'Task',
+    plural: 'Tasks',
+    accent: 'text-[#2c6f49] dark:text-[#6fc28d]',
+  },
 };
 
 /** Defaults applied when creating a fresh item of a given type. */

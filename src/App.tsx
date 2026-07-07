@@ -5,6 +5,7 @@ import { useStore } from './store/StoreContext';
 import { Sidebar } from './components/Sidebar';
 import { QuickCapture } from './components/QuickCapture';
 import { BackupControls } from './components/BackupControls';
+import { Icon } from './components/Icon';
 import { Dashboard } from './views/Dashboard';
 import { SearchView } from './views/SearchView';
 import { CollectionView } from './views/CollectionView';
@@ -38,8 +39,9 @@ export function App() {
         {conn === 'error' && (
           <div className="flex items-center justify-between gap-3 border-b border-amber-300 bg-amber-50 px-6 py-2 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
             <span>
-              ⚠️ Can't reach the local server — changes aren't being saved to
-              your markdown files.{' '}
+              <Icon name="alert" size={14} className="mr-1.5 inline align-[-2px]" />
+              Can't reach the local server — changes aren't being saved to your
+              markdown files.{' '}
               {connError && <span className="opacity-70">({connError})</span>}{' '}
               Start it with <code className="font-mono">npm start</code>.
             </span>

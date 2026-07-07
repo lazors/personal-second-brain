@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useStore } from '../store/StoreContext';
 import { parseImport } from '../store/api';
 import { useTheme } from '../lib/theme';
+import { Icon } from './Icon';
 
 export function BackupControls() {
   const { exportJSON, importItems } = useStore();
@@ -55,7 +56,7 @@ export function BackupControls() {
         onClick={toggle}
         title="Toggle theme"
       >
-        {theme === 'dark' ? '☀️' : '🌙'}
+        <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
       </button>
       <button className="btn-subtle h-9" onClick={doExport} title="Export JSON backup">
         Export

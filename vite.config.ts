@@ -17,7 +17,7 @@ export default defineConfig({
     // same-origin (no CORS) and never holds secrets or file access itself.
     proxy: {
       '/api': {
-        target: 'http://localhost:8787',
+        target: 'http://localhost:6767',
         changeOrigin: true,
       },
     },

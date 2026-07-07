@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Item, ItemType, Priority, TaskStatus } from '../types';
 import { TYPE_META } from '../types';
 import { parseTags, tsToDateInput, dateInputToTs } from '../lib/util';
+import { Mark, TYPE_SHAPE } from './Mark';
 
 export interface ItemFormValues {
   type: ItemType;
@@ -66,7 +67,7 @@ export function ItemForm({
                   type === t ? 'btn-primary' : 'btn-subtle'
                 }`}
               >
-                <span>{TYPE_META[t].icon}</span>
+                <Mark shape={TYPE_SHAPE[t]} size={12} />
                 {TYPE_META[t].label}
               </button>
             ))}

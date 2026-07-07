@@ -5,6 +5,7 @@ import { useStore } from '../store/StoreContext';
 import { ItemCard } from '../components/ItemCard';
 import { Modal } from '../components/Modal';
 import { ItemForm } from '../components/ItemForm';
+import { Mark, TYPE_SHAPE } from '../components/Mark';
 import type { ItemFormValues } from '../components/ItemForm';
 
 interface CollectionViewProps {
@@ -101,7 +102,10 @@ export function CollectionView({ type }: CollectionViewProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
-            <span>{meta.icon}</span> {meta.plural}
+            <span className={meta.accent} aria-hidden>
+              <Mark shape={TYPE_SHAPE[type]} size={19} />
+            </span>{' '}
+            {meta.plural}
           </h1>
           <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <span>
@@ -130,7 +134,7 @@ export function CollectionView({ type }: CollectionViewProps) {
             placeholder={`Search ${meta.plural.toLowerCase()}…`}
           />
           <button className="btn-primary h-9" onClick={() => setCreating(true)}>
-            + New {meta.label}
+            <Mark shape="plus" size={14} /> New {meta.label}
           </button>
         </div>
       </div>
@@ -235,7 +239,9 @@ export function CollectionView({ type }: CollectionViewProps) {
         </div>
       ) : list.length === 0 ? (
         <div className="card flex flex-col items-center gap-2 py-12 text-center">
-          <span className="text-3xl">{meta.icon}</span>
+          <span className={meta.accent} aria-hidden>
+            <Mark shape={TYPE_SHAPE[type]} size={30} />
+          </span>
           <p className="text-slate-500 dark:text-slate-400">
             No {meta.plural.toLowerCase()} yet.
           </p>

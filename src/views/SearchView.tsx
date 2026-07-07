@@ -5,6 +5,7 @@ import { useStore } from '../store/StoreContext';
 import { ItemCard } from '../components/ItemCard';
 import { Modal } from '../components/Modal';
 import { ItemForm } from '../components/ItemForm';
+import { Mark, TYPE_SHAPE } from '../components/Mark';
 
 export function SearchView() {
   const { items, updateItem } = useStore();
@@ -38,8 +39,8 @@ export function SearchView() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-        🔍 Search
+      <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-800 dark:text-slate-100">
+        <Mark shape="search" size={19} /> Search
       </h1>
 
       <input
@@ -60,10 +61,10 @@ export function SearchView() {
         {ITEM_TYPES.map((t) => (
           <button
             key={t}
-            className={`chip ${typeFilter === t ? 'bg-brand-600 text-white' : ''}`}
+            className={`chip gap-1.5 ${typeFilter === t ? 'bg-brand-600 text-white' : ''}`}
             onClick={() => setTypeFilter(t)}
           >
-            {TYPE_META[t].icon} {TYPE_META[t].plural}
+            <Mark shape={TYPE_SHAPE[t]} size={11} /> {TYPE_META[t].plural}
           </button>
         ))}
       </div>
@@ -74,8 +75,9 @@ export function SearchView() {
 
       {Array.from(grouped.entries()).map(([type, list]) => (
         <section key={type} className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            {TYPE_META[type].icon} {TYPE_META[type].plural} ({list.length})
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <Mark shape={TYPE_SHAPE[type]} size={12} /> {TYPE_META[type].plural}{' '}
+            ({list.length})
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {list.map((item) => (

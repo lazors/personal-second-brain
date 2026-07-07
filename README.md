@@ -75,12 +75,12 @@ markdown files (the browser never touches your filesystem directly).
 npm install
 
 # Develop (two terminals): UI hot-reload + the file/API server
-npm run server     # API + data on http://localhost:8787
+npm run server     # API + data on http://localhost:6767
 npm run dev        # UI on http://localhost:5173 (proxies /api to the server)
 
 # Use it for real (single process serving UI + API):
 npm run build
-npm start          # open http://localhost:8787
+npm start          # open http://localhost:6767
 
 npm test           # run unit tests (Vitest)
 ```
@@ -96,7 +96,7 @@ Node server; `docker-compose.yml` bind-mounts your host `./brain` folder so your
 markdown stays on disk and is the source of truth.
 
 ```bash
-docker compose up --build      # open http://localhost:3000
+docker compose up --build      # open http://localhost:6767
 ```
 
 Files you (or an agent) drop into `./brain` show up live in the running app, and
