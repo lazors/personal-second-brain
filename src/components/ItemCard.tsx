@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Item, TaskStatus } from '../types';
-import { TYPE_META } from '../types';
+import { TYPE_META, patchForTypeChange } from '../types';
 import { formatDate, timeAgo, dueDaysUntil, isUrgent, dueLabel } from '../lib/util';
 import { useStore } from '../store/StoreContext';
 
@@ -32,6 +32,7 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
   const { updateItem, deleteItem } = useStore();
   const [confirming, setConfirming] = useState(false);
   const meta = TYPE_META[item.type];
+  const isTask = item.type === 'task';
 
   const cycleStatus = () => {
     const order: TaskStatus[] = ['todo', 'doing', 'done'];
@@ -60,24 +61,17 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
           {item.type === 'thought' && (
             <button
               className="btn-ghost h-7 px-2 text-xs"
-              onClick={() => updateItem(item.id, { type: 'idea' })}
+              onClick={() => updateItem(item.id, patchForTypeChange('idea'))}
               title="Move this thought to Ideas"
             >
               💡 To idea
             </button>
           )}
-          {item.type === 'idea' && (
+          {(item.type === 'thought' || item.type === 'idea') && (
             <button
               className="btn-ghost h-7 px-2 text-xs"
-              onClick={() =>
-                updateItem(item.id, {
-                  type: 'task',
-                  status: 'todo',
-                  priority: undefined,
-                  due: undefined,
-                })
-              }
-              title="Move this idea to Tasks"
+              onClick={() => updateItem(item.id, patchForTypeChange('task'))}
+              title={`Move this ${item.type} to Tasks`}
             >
               ✅ To task
             </button>
@@ -90,24 +84,39 @@ export function ItemCard({ item, onEdit, onTagClick }: ItemCardProps) {
           >
             ✎
           </button>
+          {isTask && item.status !== 'done' && (
+            <button
+              className="btn-ghost h-8 px-3 text-sm"
+              onClick={() => updateItem(item.id, { status: 'done' })}
+              title="Mark as done"
+            >
+              ✓ Done
+            </button>
+          )}
           {confirming ? (
             <button
-              className="btn h-7 bg-rose-600 px-2 text-xs text-white hover:bg-rose-700"
+              className={`btn bg-rose-600 text-white hover:bg-rose-700 ${
+                isTask ? 'h-8 px-3 text-sm' : 'h-7 px-2 text-xs'
+              }`}
               onClick={() => deleteItem(item.id)}
             >
-              Delete?
+              {isTask ? 'Basket?' : 'Delete?'}
             </button>
           ) : (
             <button
-              className="btn-ghost h-7 w-7 !px-0 text-xs"
+              className={
+                isTask
+                  ? 'btn-ghost h-8 px-3 text-sm'
+                  : 'btn-ghost h-7 w-7 !px-0 text-xs'
+              }
               onClick={() => {
                 setConfirming(true);
                 setTimeout(() => setConfirming(false), 3000);
               }}
-              aria-label="Delete"
-              title="Delete"
+              aria-label={isTask ? 'Basket' : 'Delete'}
+              title={isTask ? 'Drop to basket' : 'Delete'}
             >
-              🗑
+              {isTask ? '🗑 Basket' : '🗑'}
             </button>
           )}
         </div>

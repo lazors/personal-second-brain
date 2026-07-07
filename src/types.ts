@@ -38,3 +38,13 @@ export function defaultsForType(type: ItemType): Partial<Item> {
       return {};
   }
 }
+
+/** Patch that converts an existing item to another type, resetting task fields. */
+export function patchForTypeChange(type: ItemType): Partial<Item> {
+  return type === 'task'
+    ? { type, status: 'todo', priority: undefined, due: undefined }
+    : { type, status: undefined, priority: undefined, due: undefined };
+}
+
+/** dataTransfer type used to drag items between views (e.g. onto sidebar tabs). */
+export const ITEM_DRAG_TYPE = 'application/x-second-brain-item-id';

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import type { Item, ItemType, TaskStatus } from '../types';
-import { TYPE_META } from '../types';
+import { ITEM_DRAG_TYPE, TYPE_META } from '../types';
 import { useStore } from '../store/StoreContext';
 import { ItemCard } from '../components/ItemCard';
 import { Modal } from '../components/Modal';
@@ -17,7 +17,6 @@ const PRIORITY_ORDER: Record<string, number> = { high: 0, med: 1, low: 2 };
 const TASK_COLUMNS: { status: TaskStatus; label: string }[] = [
   { status: 'todo', label: 'To do' },
   { status: 'doing', label: 'Doing' },
-  { status: 'done', label: 'Done' },
 ];
 
 export function CollectionView({ type }: CollectionViewProps) {
@@ -159,7 +158,7 @@ export function CollectionView({ type }: CollectionViewProps) {
       )}
 
       {type === 'task' ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {TASK_COLUMNS.map((col) => {
             const cards = list.filter(
               (i) => (i.status ?? 'todo') === col.status,
@@ -176,7 +175,7 @@ export function CollectionView({ type }: CollectionViewProps) {
                 onDrop={() => dropTo(col.status)}
                 className={`flex flex-col gap-3 rounded-xl border p-3 transition-colors ${
                   isOver
-                    ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30'
+                    ? 'border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-900/30'
                     : 'border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30'
                 }`}
               >
@@ -197,7 +196,8 @@ export function CollectionView({ type }: CollectionViewProps) {
                     <div
                       key={item.id}
                       draggable
-                      onDragStart={() => {
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData(ITEM_DRAG_TYPE, item.id);
                         setDragId(item.id);
                         draggedRef.current = true;
                       }}
@@ -248,7 +248,25 @@ export function CollectionView({ type }: CollectionViewProps) {
           {list.map((item) => (
             <div
               key={item.id}
-              onClick={openOnClick(item)}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData(ITEM_DRAG_TYPE, item.id);
+                draggedRef.current = true;
+              }}
+              onDragEnd={() => {
+                // Clear after any trailing click has had a chance to fire.
+                setTimeout(() => {
+                  draggedRef.current = false;
+                }, 0);
+              }}
+              onClick={(e) => {
+                // Suppress the click that immediately follows a drag.
+                if (draggedRef.current) {
+                  draggedRef.current = false;
+                  return;
+                }
+                openOnClick(item)(e);
+              }}
               className="cursor-pointer"
             >
               <ItemCard

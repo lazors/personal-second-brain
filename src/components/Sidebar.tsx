@@ -1,11 +1,20 @@
-import { ITEM_TYPES, TYPE_META } from '../types';
+import { useState } from 'react';
+import type { ItemType } from '../types';
+import {
+  ITEM_DRAG_TYPE,
+  ITEM_TYPES,
+  TYPE_META,
+  patchForTypeChange,
+} from '../types';
 import { useStore } from '../store/StoreContext';
 import { navigate, useRoute } from '../lib/router';
 import { Mark, TYPE_SHAPE } from './Mark';
 
 export function Sidebar() {
   const route = useRoute();
-  const { items } = useStore();
+  const { items, updateItem } = useStore();
+  // Collection tab currently hovered by a dragged card.
+  const [dropType, setDropType] = useState<ItemType | null>(null);
 
   const countByType = (type: string) =>
     items.filter((i) => i.type === type).length;
@@ -62,8 +71,27 @@ export function Sidebar() {
         return (
           <button
             key={type}
-            className={linkClass(active)}
+            className={
+              dropType === type
+                ? `${linkBase} bg-brand-50 text-[#33514d] ring-1 ring-inset ring-brand-500 dark:bg-brand-900/30 dark:text-[#cdeed9] dark:ring-brand-400`
+                : linkClass(active)
+            }
             onClick={() => navigate(path)}
+            onDragOver={(e) => {
+              if (!e.dataTransfer.types.includes(ITEM_DRAG_TYPE)) return;
+              e.preventDefault();
+              setDropType(type);
+            }}
+            onDragLeave={() => setDropType((t) => (t === type ? null : t))}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDropType(null);
+              const id = e.dataTransfer.getData(ITEM_DRAG_TYPE);
+              const dragged = items.find((i) => i.id === id);
+              if (dragged && dragged.type !== type) {
+                updateItem(id, patchForTypeChange(type));
+              }
+            }}
           >
             <span className="flex items-center gap-2.5">
               <Mark shape={TYPE_SHAPE[type]} /> {meta.plural}

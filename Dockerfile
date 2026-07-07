@@ -14,7 +14,7 @@ RUN npm run build
 FROM node:20-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-ENV PORT=8787
+ENV PORT=6767
 ENV BRAIN_DIR=/app/brain
 
 # The server uses only Node built-ins, so no npm install at runtime.
@@ -22,5 +22,5 @@ COPY package.json ./
 COPY server ./server
 COPY --from=build /app/dist ./dist
 
-EXPOSE 8787
+EXPOSE 6767
 CMD ["node", "server/index.js"]

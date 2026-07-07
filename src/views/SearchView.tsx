@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Item, ItemType } from '../types';
-import { ITEM_TYPES, TYPE_META } from '../types';
+import { ITEM_DRAG_TYPE, ITEM_TYPES, TYPE_META } from '../types';
 import { useStore } from '../store/StoreContext';
 import { ItemCard } from '../components/ItemCard';
 import { Modal } from '../components/Modal';
@@ -79,7 +79,15 @@ export function SearchView() {
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {list.map((item) => (
-              <ItemCard key={item.id} item={item} onEdit={setEditing} />
+              <div
+                key={item.id}
+                draggable
+                onDragStart={(e) =>
+                  e.dataTransfer.setData(ITEM_DRAG_TYPE, item.id)
+                }
+              >
+                <ItemCard item={item} onEdit={setEditing} />
+              </div>
             ))}
           </div>
         </section>
