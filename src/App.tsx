@@ -5,6 +5,7 @@ import { useStore } from './store/StoreContext';
 import { Sidebar } from './components/Sidebar';
 import { QuickCapture } from './components/QuickCapture';
 import { BackupControls } from './components/BackupControls';
+import { BacklogPanel } from './components/BacklogPanel';
 import { Icon } from './components/Icon';
 import { Dashboard } from './views/Dashboard';
 import { SearchView } from './views/SearchView';
@@ -54,6 +55,7 @@ export function App() {
           <div className="mx-auto max-w-6xl">{renderMain()}</div>
         </main>
       </div>
+      <BacklogPanel />
     </div>
   );
 }

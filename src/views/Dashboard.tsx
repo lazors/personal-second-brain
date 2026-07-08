@@ -32,7 +32,7 @@ const KIND_ACCENT: Record<string, { text: string; border: string }> = {
 const weekday = (ts: number) =>
   new Date(ts).toLocaleDateString(undefined, { weekday: 'short' });
 
-/** A single task row used inside the focus + backlog panels. */
+/** A single task row used inside the focus + unscheduled panels. */
 function TaskRow({
   t,
   onToggle,
@@ -143,8 +143,8 @@ export function Dashboard() {
     [openTasks],
   );
 
-  // No due date or further out.
-  const backlog = useMemo(
+  // Open tasks with no due date (or further out than this week).
+  const unscheduled = useMemo(
     () =>
       openTasks
         .filter((t) => {
@@ -296,10 +296,10 @@ export function Dashboard() {
             </div>
           </section>
 
-          {/* Backlog */}
+          {/* Unscheduled */}
           <section className={`${panel} px-[18px] pb-2.5 pt-4`}>
             <div className="mb-1.5 flex items-baseline justify-between">
-              <h2 className={heading}>Backlog</h2>
+              <h2 className={heading}>Unscheduled</h2>
               <button
                 className="text-[12.5px] text-[#33514d] hover:underline dark:text-[#6fc28d]"
                 onClick={() => navigate('/tasks')}
@@ -307,7 +307,7 @@ export function Dashboard() {
                 View all →
               </button>
             </div>
-            {backlog.length === 0 ? (
+            {unscheduled.length === 0 ? (
               <p className="px-2.5 py-3 text-[13px] text-[#a39d92] dark:text-[#7c8278]">
                 {openTasks.length === 0
                   ? 'No open tasks.'
@@ -315,7 +315,7 @@ export function Dashboard() {
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
-                {backlog.map((t) => (
+                {unscheduled.map((t) => (
                   <div
                     key={t.id}
                     className="border-b border-[#f3f1ec] dark:border-[#232820]"

@@ -67,3 +67,19 @@ body {
       text-xs font-medium text-[#5c574e] dark:bg-[#1f241c] dark:text-[#b6bbb0];
   }
 }
+
+/* Backlog drawer: rises gently from its button, like a card pulled from a file. */
+.backlog-panel {
+  animation: backlog-in 160ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  transform-origin: bottom left;
+}
+@keyframes backlog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

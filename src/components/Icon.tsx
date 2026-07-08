@@ -5,7 +5,8 @@ export type IconName =
   | 'sun'
   | 'moon'
   | 'alert'
-  | 'x';
+  | 'x'
+  | 'undo';
 
 /** Monoline action icons (lucide-style paths) matching the Mark system. */
 const PATHS: Record<IconName, string[]> = {
@@ -36,6 +37,7 @@ const PATHS: Record<IconName, string[]> = {
     'M12 17h.01',
   ],
   x: ['M18 6 6 18', 'm6 6 12 12'],
+  undo: ['M9 14 4 9l5-5', 'M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11'],
 };
 
 export function Icon({
